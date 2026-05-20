@@ -88,6 +88,9 @@ def tasks_menu():
                 result = service.search_task(keyword)
                 if result:
                     show_tasks(result)
+                else:
+                    print("未找到匹配任务")
+                    input("\n按回车键继续...")
             elif choice == "0":
                 break
             else:
