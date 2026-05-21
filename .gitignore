@@ -1,7 +1,8 @@
 .venv/
 __pycache__/
 *.pyc
-todo.db
+data/todo.db
+logs/app.log
 .vscode/
 .idea/
 *.log

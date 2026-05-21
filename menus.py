@@ -1,23 +1,30 @@
-import repo.task_repo as db
+import os
+
 from service import task_service as service
 from service.errors import AppError
-import os
+from utils.logger import logger
 
 
 def handle_app_error(error):
-    print(error)
+    logger.warning(str(error))
+    print(f"操作失败：{error}")
+    pause()
+
+
+def pause():
     input("\n按回车键继续...")
 
 
 def show_tasks(tasks):
     if not tasks:
         print("暂无任务")
+        pause()
         return
     print("\n" + "=" * 24 + "Tasks" + "=" * 25)
     print(f"{'ID':<5}{'TITLE':<15}{'STATUS':<10}{'P':<5}{'DUE_TIME':<15}")
     for task in tasks:
         print(f"{task[0]:<5}{task[1]:<15}{task[2]:<10}{task[3]:<5}{str(task[5]):<15}")
-    input("\n按回车键继续...")
+    pause()
 
 
 def main_menu():
@@ -50,7 +57,7 @@ def main_menu():
             break
         else:
             print("错误指令")
-            input("\n按回车键继续...")
+            pause()
 
 
 def tasks_menu():
@@ -90,14 +97,14 @@ def tasks_menu():
                     show_tasks(result)
                 else:
                     print("未找到匹配任务")
-                    input("\n按回车键继续...")
+                    pause()
             elif choice == "0":
                 break
             else:
                 print("错误指令")
-                input("\n按回车键继续...")
-        except AppError as e:
-            handle_app_error(e)
+                pause()
+        except AppError as error:
+            handle_app_error(error)
             
 
 def add_task_menu():
@@ -109,8 +116,9 @@ def add_task_menu():
         message = service.add_task(title, priority, due_at)
         if message:
             print(message)
-    except AppError as e:
-        handle_app_error(e)
+            pause()
+    except AppError as error:
+        handle_app_error(error)
 
 
 def update_task_menu():
@@ -129,24 +137,27 @@ def update_task_menu():
             message = service.update_title(task_id, new_title)
             if message:
                 print(message)
+                pause()
 
         elif choice == "2":
             new_due_at = input("更新时间: ")
             message = service.update_due_at(task_id, new_due_at)
             if message:
                 print(message)
+                pause()
             
         elif choice == "3":
             new_priority = input("更新优先级: ")
             message = service.update_priority(task_id, new_priority)
             if message:
                 print(message)
+                pause()
 
         else:
             print("错误指令")
-            input("\n按回车键继续...")
-    except AppError as e:
-        handle_app_error(e)
+            pause()
+    except AppError as error:
+        handle_app_error(error)
 
 
 def done_task_menu():
@@ -164,17 +175,19 @@ def done_task_menu():
             message = service.done_task(task_id)
             if message:
                 print(message)
+                pause()
 
         elif choice == "2":
             message = service.undo_task(task_id)
             if message:
                 print(message)
+                pause()
 
         else:
             print("错误指令")
-            input("\n按回车键继续...")
-    except AppError as e:
-        handle_app_error(e)
+            pause()
+    except AppError as error:
+        handle_app_error(error)
 
 
 def delete_task_menu():
@@ -183,8 +196,9 @@ def delete_task_menu():
         message = service.delete_task(task_id)
         if message:
             print(message)
-    except AppError as e:
-        handle_app_error(e)
+            pause()
+    except AppError as error:
+        handle_app_error(error)
 
 
 def show_stats():
@@ -193,4 +207,4 @@ def show_stats():
     print(f"总任务: {stats['all']}")
     print(f"已完成: {stats['done']}")
     print(f"未完成: {stats['todo']}")
-    input("\n按回车键继续...")
+    pause()

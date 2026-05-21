@@ -1,8 +1,8 @@
-import repo.task_repo as db
+from db.init_db import init_db
 import menus as men
 
 
-db.init_db()
+init_db()
 
 def main():
     men.main_menu()
