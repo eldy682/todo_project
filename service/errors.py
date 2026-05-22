@@ -8,3 +8,7 @@ class ValidationError(AppError):
 
 class NotFoundError(AppError):
     pass
+
+
+class DatabaseError(AppError):
+    pass

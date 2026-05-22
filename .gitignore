@@ -1,4 +1,5 @@
 .venv/
+.env
 __pycache__/
 *.pyc
 data/todo.db
@@ -8,3 +9,4 @@ logs/app.log
 *.log
 temp/
 tmp/
+todo.py

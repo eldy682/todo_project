@@ -1,7 +1,11 @@
-from utils import validator
-from repo import task_repo as repo
+import json
+from db.base import execute_query
+from repo.task_repo import TaskRepo
 from service.errors import ValidationError, NotFoundError
 
+task_repo = TaskRepo(execute_query)
+
+ALLOWED_CATEGORIES = ["工作", "学习", "生活", "娱乐", "其他"]
 
 def normalize_title(title):
     if not isinstance(title, str):
@@ -45,8 +49,40 @@ def get_valid_task(task_id):
     except ValueError:
         raise ValidationError("任务ID必须是数字")
     
-    task = repo.get_task_by_id(task_id)
+    task = task_repo.get_task_by_id(task_id)
     if not task:
         raise NotFoundError("任务不存在")
     
     return task
+
+def normalize_category(category):
+    if not isinstance(category, str):
+        raise ValidationError("种类必须是字符串")
+    
+    category = category.strip().lower()
+    if not category:
+        raise ValidationError("种类不能为空")
+    
+    if category not in ALLOWED_CATEGORIES:
+        raise ValidationError("种类不存在")
+
+    return category
+
+def normalize_tag(tag):
+    if not isinstance(tag, str):
+        raise ValidationError("标签必须是字符串")
+    
+    tag = tag.strip().lower()
+    if not tag:
+        raise ValidationError("标签不能为空")
+
+    return tag
+
+def normalize_tags(tags):
+    if not isinstance(tags, (str, list)):
+        raise ValidationError("标签必须是字符串或字符串列表")
+    
+    if isinstance(tags, str):   
+        tags = [tag.strip() for tag in tags.split(" ") if tag.strip()]
+    
+    return [normalize_tag(tag) for tag in tags]
