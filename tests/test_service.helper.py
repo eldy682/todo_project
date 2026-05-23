@@ -1,7 +1,7 @@
 import pytest
 
-from service import errors
-from service import service_helper
+from app.errors import errors
+from app.service import service_helper
 
 
 ALLOWED_CATEGORIES = ["工作", "学习", "生活", "娱乐", "其他"]

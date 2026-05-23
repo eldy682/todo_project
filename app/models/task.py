@@ -1,12 +1,13 @@
 
 
 class Task:
-    def __init__(self, id, title, status, priority, category, tags, created_at, due_at):
+    def __init__(self, id, title, status, priority, category, tags, created_at, due_at, completed_at):
         self.id = id
         self.title = title
         self.status = status
         self.priority = priority
         self.category = category
+        self.completed_at = completed_at
         self.tags = tags
         self.created_at = created_at
         self.due_at = due_at
@@ -29,5 +30,6 @@ class Task:
             category=row["category"],
             tags=tags,
             created_at=row["created_at"],
-            due_at=row["due_at"]
+            due_at=row["due_at"],
+            completed_at=row["completed_at"]
         )

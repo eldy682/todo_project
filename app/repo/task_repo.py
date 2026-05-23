@@ -1,4 +1,4 @@
-from models.task import Task
+from app.models.task import Task
 
 
 class TaskRepo:
@@ -6,10 +6,25 @@ class TaskRepo:
         self.execute_query = execute_query
 
 
+    def _base_task_query(self, where_sql="", params=()):
+        sql = f"""
+        SELECT tasks.*, GROUP_CONCAT(tags.name) AS tags FROM tasks
+        LEFT JOIN task_tags ON tasks.id = task_tags.task_id
+        LEFT JOIN tags ON task_tags.tag_id = tags.id
+        {where_sql}
+        GROUP BY tasks.id
+        ORDER BY tasks.due_at
+        """
+
+        rows = self.execute_query(sql, params, fetch=True)
+        return [Task.from_row(row) for row in rows]
+
+
     def get_task_by_id(self, task_id):
         where_sql = "WHERE tasks.id = ?"
         task = self._base_task_query(where_sql, (task_id,))
-        return task
+        return task[0] if task else None
+
 
     def get_or_create_tag_id(self, tag):
         insert_sql = """
@@ -24,21 +39,19 @@ class TaskRepo:
         return rows[0]["id"]
 
 
-    def add_task(self, title, priority, due_at, category, tags):
+    def add_task(self, title, priority, due_at, category):
         task_sql = """
         INSERT INTO tasks(title, status, priority, category, created_at, due_at)
                         VALUES(?, 'todo', ?, ?, datetime('now', '+8 hours'), ?)
         """
-        task_tags_sql = """
+        return self.execute_query(task_sql, (title, priority, category, due_at), return_lastrowid=True)
+    
+
+    def add_task_tag(self, task_id, tag_id):
+        sql = """
         INSERT INTO task_tags(task_id, tag_id) VALUES(?, ?)
         """
-
-        task_id = self.execute_query(task_sql, (title, priority, category, due_at), return_lastrowid=True)
-
-        for tag in tags:
-            tag_id = self.get_or_create_tag_id(tag)
-            self.execute_query(task_tags_sql, (task_id, tag_id))
-
+        self.execute_query(sql, (task_id, tag_id))
 
 
     def update_title(self, task_id, new_title):
@@ -62,16 +75,38 @@ class TaskRepo:
         self.execute_query(sql, (new_priority, task_id))
 
 
+    def update_category(self, task_id, new_category):
+        sql = """
+        UPDATE tasks SET category = ? WHERE id = ?
+        """
+        self.execute_query(sql, (new_category, task_id))
+
+
+    def update_tags(self, task_id, new_tags):
+        delete_sql = """
+        DELETE FROM task_tags WHERE task_id = ?
+        """
+        insert_sql = """
+        INSERT INTO task_tags(task_id, tag_id) VALUES(?, ?)
+        """
+
+        self.execute_query(delete_sql, (task_id,))
+
+        for tag in new_tags:
+            tag_id = self.get_or_create_tag_id(tag)
+            self.execute_query(insert_sql, (task_id, tag_id))
+
+
     def done_task(self, task_id):
         sql = """
-        UPDATE tasks SET status = 'done' WHERE id = ?
+        UPDATE tasks SET status = 'done', completed_at = datetime('now', '+8 hours') WHERE id = ?
         """
         self.execute_query(sql, (task_id,))
 
 
     def undo_task(self, task_id):
         sql = """
-        UPDATE tasks SET status = 'todo' WHERE id = ?
+        UPDATE tasks SET status = 'todo', completed_at = NULL WHERE id = ?
         """
         self.execute_query(sql, (task_id,))
 
@@ -99,6 +134,16 @@ class TaskRepo:
 
     def list_today(self):
         where_sql = "WHERE due_at IS NOT NULL AND date(due_at) = date('now', 'localtime') AND status = 'todo'"
+        return self._base_task_query(where_sql)
+
+
+    def list_due_soon(self):
+        where_sql = """
+        WHERE due_at IS NOT NULL
+          AND due_at >= datetime('now', 'localtime')
+          AND due_at <= datetime('now', 'localtime', '+24 hours')
+          AND status = 'todo'
+        """
         return self._base_task_query(where_sql)
 
     def list_todo(self):
@@ -168,16 +213,3 @@ class TaskRepo:
         """
         rows = self.execute_query(sql, fetch=True)
         return rows[0]["count"]
-    
-    def _base_task_query(self, where_sql="", params=()):
-        sql = f"""
-        SELECT tasks.*, GROUP_CONCAT(tags.name) AS tags FROM tasks
-        LEFT JOIN task_tags ON tasks.id = task_tags.task_id
-        LEFT JOIN tags ON task_tags.tag_id = tags.id
-        {where_sql}
-        GROUP BY tasks.id
-        ORDER BY tasks.due_at
-        """
-
-        rows = self.execute_query(sql, params, fetch=True)
-        return [Task.from_row(row) for row in rows]

@@ -1,7 +1,7 @@
 import pytest
 
-from service import errors
-from service import service_helper
+from app.errors import errors
+from app.service import service_helper
 
 
 def test_normalize_title():

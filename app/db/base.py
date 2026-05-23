@@ -1,6 +1,6 @@
 import sqlite3
 
-from service.errors import DatabaseError
+from app.errors.errors import DatabaseError
 
 from .connection import get_conn
 

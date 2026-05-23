@@ -1,5 +1,5 @@
 import pytest
-from models.task import Task
+from app.models.task import Task
 
 
 def test_models_task_from_row():

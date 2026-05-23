@@ -9,4 +9,5 @@ logs/app.log
 *.log
 temp/
 tmp/
+ui_v1.py
 todo.py

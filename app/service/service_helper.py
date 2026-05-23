@@ -1,7 +1,7 @@
 import json
-from db.base import execute_query
-from repo.task_repo import TaskRepo
-from service.errors import ValidationError, NotFoundError
+from app.db.base import execute_query
+from app.repo.task_repo import TaskRepo
+from app.errors.errors import ValidationError, NotFoundError
 
 task_repo = TaskRepo(execute_query)
 

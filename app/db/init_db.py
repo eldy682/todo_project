@@ -11,7 +11,8 @@ def init_db():
         priority INTEGER DEFAULT 2,
         category TEXT,
         created_at TEXT,
-        due_at TEXT
+        due_at TEXT,
+        completed_at TEXT
     );
 
     CREATE TABLE IF NOT EXISTS tags(
@@ -25,7 +26,8 @@ def init_db():
         PRIMARY KEY (task_id, tag_id),
         FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
-    );
+    );   
     """)
+
     conn.commit()
     conn.close()
